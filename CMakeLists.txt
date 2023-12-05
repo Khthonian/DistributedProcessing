@@ -3,6 +3,11 @@
 cmake_minimum_required(VERSION 3.12)
 project(DistributedProcessing)
 
+# Ensure the build directory exists
+if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/build")
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/build")
+endif()
+
 # Set the src directory
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
