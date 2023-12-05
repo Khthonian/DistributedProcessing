@@ -1,3 +1,6 @@
 # Ignore compiled executables
 src/client.exe
 src/server.exe
+
+# Ignore build directory
+build/
