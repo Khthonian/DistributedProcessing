@@ -2,16 +2,42 @@
 
 // Import libraries
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <cstdint>
 #include <iostream>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/opencv.hpp>
 #include <string>
+#include <vector>
 
-// Define a message that will trigger a disconnect
-const char* DISCONNECT_MESSAGE = "/disconnect";
+int main(int argc, char** argv) {
+  if (argc != 5) {
+    std::cerr << "Usage: " << argv[0]
+              << " <server_ip:port> <image_path> <operation> <param>"
+              << std::endl;
+    return -1;
+  }
 
-int main() {
+  // Extract command-line arguments
+  std::string serverAddress = argv[1];
+  std::string imagePath = argv[2];
+  std::string operation = argv[3];
+  std::string param = argv[4];
+
+  // Extract server IP and port from the address
+  size_t pos = serverAddress.find(':');
+  if (pos == std::string::npos) {
+    std::cerr << "Error: Invalid server address format!" << std::endl;
+    return -1;
+  }
+
+  std::string serverIP = serverAddress.substr(0, pos);
+  int serverPort = std::stoi(serverAddress.substr(pos + 1));
+
   // Create a TCP socket
   int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
   if (clientSocket == -1) {
@@ -22,8 +48,8 @@ int main() {
   // Prepare the destination server address and port information
   sockaddr_in serverAddr{};
   serverAddr.sin_family = AF_INET;
-  serverAddr.sin_port = htons(12345);
-  serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+  serverAddr.sin_port = htons(serverPort);
+  serverAddr.sin_addr.s_addr = inet_addr(serverIP.c_str());
 
   // Connect to the server
   if (connect(clientSocket, (struct sockaddr*)&serverAddr,
@@ -37,40 +63,39 @@ int main() {
   // Confirm server connection to the user
   std::cout << "Connected to server." << std::endl;
 
-  while (true) {
-    // Get the message from the user
-    std::cout << "Enter the message to send: ";
-    std::string message;
-    std::getline(std::cin, message);
-
-    // Check if the user requested a disconnect
-    if (message == DISCONNECT_MESSAGE) {
-      std::cout << "Disconnected from server.";
-      close(clientSocket);
-      break;
-    }
-
-    // Use the send() function to send the message to the server
-    ssize_t bytesSent = send(clientSocket, message.c_str(), message.size(), 0);
-    if (bytesSent == -1) {
-      std::cerr << "Error : Message could not be sent!" << std::endl;
-      close(clientSocket);
-      break;
-    }
-
-    // Receive a response message from the server
-    char buffer[1024];
-    ssize_t bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
-    if (bytesReceived == -1) {
-      std::cerr << "Error: Response could not be received!" << std::endl;
-      close(clientSocket);
-      break;
-    }
-
-    // Print the response message
-    buffer[bytesReceived] = '\0';  // Null-terminate the received data
-    std::cout << "Response received from server: " << buffer << std::endl;
+  // Display the image
+  cv::Mat originalImage = cv::imread(imagePath, cv::IMREAD_COLOR);
+  if (originalImage.empty()) {
+    std::cerr << "Error: Could not read the image file!" << std::endl;
+    close(clientSocket);
+    exit(EXIT_FAILURE);
   }
+
+  // Display the original image using imshow
+  cv::imshow("Original Image", originalImage);
+  cv::waitKey(0);
+
+  std::vector<uchar> buffer;
+  cv::imencode(".jpg", originalImage, buffer);
+
+  // Send image
+  send(clientSocket, buffer.data(), buffer.size(), 0);
+
+  // Receive modified image
+  buffer.resize(10000000);
+  int bytesReceived = recv(clientSocket, buffer.data(), buffer.size(), 0);
+  buffer.resize(bytesReceived);
+
+  cv::Mat modifiedImage = cv::imdecode(buffer, cv::IMREAD_COLOR);
+
+  if (!modifiedImage.empty()) {
+    // Display the modified image using imshow
+    cv::imshow("Modified Image", modifiedImage);
+    cv::waitKey(0);
+  }
+
+  // Close the client socket
+  close(clientSocket);
 
   return 0;
 }

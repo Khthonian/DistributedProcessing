@@ -2,40 +2,48 @@
 
 // Import libraries
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include <cstring>
+#include <cstdint>
 #include <iostream>
+#include <mutex>
+#include <opencv2/opencv.hpp>
 #include <thread>
 #include <vector>
+
+#include "processing.h"
 
 // Define the max amount of clients
 const int MAX_CLIENTS = 100;
 
+// Define a mutex to synchronize access to shared resources
+std::mutex mutex;
+
 // Define a function to handle communication with a specific client
-void handleClient(int clientSocket, const sockaddr_in& clientAddr) {
-  char clientIP[INET_ADDRSTRLEN];
-  inet_ntop(AF_INET, &(clientAddr.sin_addr), clientIP, INET_ADDRSTRLEN);
+void handleClient(int clientSocket) {
+  std::vector<uchar> buffer(10000000);
+  int bytesReceived = read(clientSocket, buffer.data(), buffer.size());
+  buffer.resize(bytesReceived);
 
-  // Receive a message from the client
-  char buffer[1024];
-  ssize_t bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
-  if (bytesReceived > 0) {
-    buffer[bytesReceived] = '\0';  // Null-terminate the received data
-    std::cout << "Received message from " << clientIP << ": " << buffer
-              << std::endl;
+  // Decode the image
+  cv::Mat originalImage = cv::imdecode(buffer, cv::IMREAD_COLOR);
 
-    // Send a response to the client
-    const char* response = "Message broadcasted successfully.";
-    ssize_t bytesSent = send(clientSocket, response, strlen(response), 0);
-    if (bytesSent == -1) {
-      std::cerr << "Error: Response could not be sent!" << std::endl;
-    } else {
-      std::cout << "Response sent to client " << clientIP << ": " << response
-                << std::endl;
-    }
-  }
+  // Initialise ImageFilters object
+  ImageFilters imageFilters;
+
+  // Apply a gamma change
+  cv::Mat modifiedImage;
+  double gammaValue = 0.5;
+  imageFilters.gammaCorrection(originalImage, modifiedImage, gammaValue);
+
+  // Encode the modified image
+  std::vector<uchar> sendBuffer;
+  cv::imencode(".jpg", modifiedImage, sendBuffer);
+
+  // Send the modified image back
+  send(clientSocket, sendBuffer.data(), sendBuffer.size(), 0);
 
   // Close the client socket after handling the communication
   close(clientSocket);
@@ -84,11 +92,12 @@ int main() {
       if (clientSockets.size() < MAX_CLIENTS) {
         clientSockets.push_back(clientSocket);
 
-        char* clientIP = inet_ntoa(clientAddr.sin_addr);
+        char clientIP[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, &(clientAddr.sin_addr), clientIP, INET_ADDRSTRLEN);
         std::cout << "Client connected: " << clientIP << std::endl;
 
         // Create a thread for the new client
-        std::thread clientThread(handleClient, clientSocket, clientAddr);
+        std::thread clientThread(handleClient, clientSocket);
         clientThread.detach();
       } else {
         std::cerr << "Error: Client connection could not be established!"
