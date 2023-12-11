@@ -3,9 +3,12 @@
 // Import libraries
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <opencv2/core/hal/interface.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <iostream>
 #include <opencv2/highgui.hpp>
@@ -13,6 +16,22 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 #include <vector>
+
+// Define fragment size
+const int FRAGMENT_SIZE = 4096;
+
+// Define a function to send the image in fragments
+void sendImage(const int socket, const std::vector<uchar>& buffer) {
+  for (size_t i = 0; i < buffer.size(); i += FRAGMENT_SIZE) {
+    size_t fragmentLength =
+        std::min(buffer.size() - i, static_cast<size_t>(FRAGMENT_SIZE));
+    std::vector<uchar> fragment(buffer.begin() + i,
+                                buffer.begin() + i + fragmentLength);
+
+    // Send fragment
+    send(socket, fragment.data(), fragment.size(), 0);
+  }
+}
 
 int main(int argc, char** argv) {
   if (argc != 5) {
@@ -74,12 +93,12 @@ int main(int argc, char** argv) {
   // Display the original image using imshow
   cv::imshow("Original Image", originalImage);
   cv::waitKey(0);
-
-  std::vector<uchar> buffer;
-  cv::imencode(".jpg", originalImage, buffer);
+  cv::destroyWindow("Original Image");
 
   // Send image
-  send(clientSocket, buffer.data(), buffer.size(), 0);
+  std::vector<uchar> buffer;
+  cv::imencode(".jpg", originalImage, buffer);
+  sendImage(clientSocket, buffer);
 
   // Receive modified image
   buffer.resize(10000000);
