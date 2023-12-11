@@ -3,12 +3,14 @@
 // Import libraries
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <opencv2/core/hal/interface.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
 #include <cstdint>
 #include <iostream>
 #include <mutex>
+#include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
 #include <thread>
 #include <vector>
@@ -18,17 +20,35 @@
 // Define the max amount of clients
 const int MAX_CLIENTS = 100;
 
+// Define fragment size
+const int FRAGMENT_SIZE = 4096;
+
 // Define a mutex to synchronize access to shared resources
 std::mutex mutex;
 
 // Define a function to handle communication with a specific client
 void handleClient(int clientSocket) {
-  std::vector<uchar> buffer(10000000);
-  int bytesReceived = read(clientSocket, buffer.data(), buffer.size());
-  buffer.resize(bytesReceived);
+  std::vector<uchar> completeImage;
+  std::vector<uchar> fragment(FRAGMENT_SIZE);
+
+  while (true) {
+    int bytesReceived = recv(clientSocket, fragment.data(), fragment.size(), 0);
+
+    // Check for end-of-transmission
+    if (bytesReceived <= 0) {
+      break;
+    }
+
+    // Append fragment to complete data
+    completeImage.insert(completeImage.end(), fragment.begin(),
+                         fragment.begin() + bytesReceived);
+  }
 
   // Decode the image
-  cv::Mat originalImage = cv::imdecode(buffer, cv::IMREAD_COLOR);
+  cv::Mat originalImage = cv::imdecode(completeImage, cv::IMREAD_COLOR);
+  cv::imshow("Original Image: Server", originalImage);
+  cv::waitKey(0);
+  cv::destroyWindow("Original Image: Server");
 
   // Initialise ImageFilters object
   ImageFilters imageFilters;
