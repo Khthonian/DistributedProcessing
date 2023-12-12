@@ -11,10 +11,10 @@
 #include <mutex>
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
-#include <thread>
 #include <vector>
 
 #include "processing.h"
+#include "threadPool.h"
 #include "transmission.h"
 
 // Define a mutex to synchronize access to shared resources
@@ -77,6 +77,9 @@ int main() {
     return -1;
   }
 
+  // Initialise thread pool with 4 threads
+  ThreadPool pool(4);
+
   std::vector<int> clientSockets;  // To keep track of connected clients
 
   while (true) {
@@ -96,14 +99,15 @@ int main() {
       std::cout << "Client connected: " << clientIP << std::endl;
 
       // Create a thread for the new client
-      std::thread clientThread(handleClient, clientSocket);
-      clientThread.detach();
+      pool.enqueue(handleClient, clientSocket);
     } else {
       std::cerr << "Error: Client connection could not be established!"
                 << std::endl;
       close(clientSocket);
     }
   }
+
+  close(serverSocket);
 
   return 0;
 }
