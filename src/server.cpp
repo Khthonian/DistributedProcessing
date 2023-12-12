@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "processing.h"
+#include "transmission.h"
 
 // Define the max amount of clients
 const int MAX_CLIENTS = 100;
@@ -28,27 +29,13 @@ std::mutex mutex;
 
 // Define a function to handle communication with a specific client
 void handleClient(int clientSocket) {
-  std::vector<uchar> completeImage;
-  std::vector<uchar> fragment(FRAGMENT_SIZE);
-
-  while (true) {
-    int bytesReceived = recv(clientSocket, fragment.data(), fragment.size(), 0);
-
-    // Check for end-of-transmission
-    if (bytesReceived <= 0) {
-      break;
-    }
-
-    // Append fragment to complete data
-    completeImage.insert(completeImage.end(), fragment.begin(),
-                         fragment.begin() + bytesReceived);
-  }
+  // Receive original image
+  std::vector<uchar> receiveBuffer;
+  Transmission serverTransmitter;
+  serverTransmitter.receiveImage(clientSocket, receiveBuffer);
 
   // Decode the image
-  cv::Mat originalImage = cv::imdecode(completeImage, cv::IMREAD_COLOR);
-  cv::imshow("Original Image: Server", originalImage);
-  cv::waitKey(0);
-  cv::destroyWindow("Original Image: Server");
+  cv::Mat originalImage = cv::imdecode(receiveBuffer, cv::IMREAD_COLOR);
 
   // Initialise ImageFilters object
   ImageFilters imageFilters;
@@ -58,12 +45,12 @@ void handleClient(int clientSocket) {
   double gammaValue = 0.5;
   imageFilters.gammaCorrection(originalImage, modifiedImage, gammaValue);
 
-  // Encode the modified image
+  std::cout << "Ping 1" << std::endl;
+
+  // Send modified image
   std::vector<uchar> sendBuffer;
   cv::imencode(".jpg", modifiedImage, sendBuffer);
-
-  // Send the modified image back
-  send(clientSocket, sendBuffer.data(), sendBuffer.size(), 0);
+  serverTransmitter.sendImage(clientSocket, sendBuffer);
 
   // Close the client socket after handling the communication
   close(clientSocket);

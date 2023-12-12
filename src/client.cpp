@@ -9,13 +9,14 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <cstdint>
 #include <iostream>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/opencv.hpp>
 #include <string>
 #include <vector>
+
+#include "transmission.h"
 
 // Define fragment size
 const int FRAGMENT_SIZE = 4096;
@@ -96,22 +97,20 @@ int main(int argc, char** argv) {
   cv::destroyWindow("Original Image");
 
   // Send image
-  std::vector<uchar> buffer;
-  cv::imencode(".jpg", originalImage, buffer);
-  sendImage(clientSocket, buffer);
-
+  std::vector<uchar> sendBuffer;
+  cv::imencode(".jpg", originalImage, sendBuffer);
+  std::cout << "Ping 1" << std::endl;
+  Transmission clientTransmitter;
+  clientTransmitter.sendImage(clientSocket, sendBuffer);
+  std::cout << "Ping 2" << std::endl;
   // Receive modified image
-  buffer.resize(10000000);
-  int bytesReceived = recv(clientSocket, buffer.data(), buffer.size(), 0);
-  buffer.resize(bytesReceived);
+  std::vector<uchar> receiveBuffer;
+  clientTransmitter.receiveImage(clientSocket, receiveBuffer);
+  std::cout << "Ping 3" << std::endl;
 
-  cv::Mat modifiedImage = cv::imdecode(buffer, cv::IMREAD_COLOR);
-
-  if (!modifiedImage.empty()) {
-    // Display the modified image using imshow
-    cv::imshow("Modified Image", modifiedImage);
-    cv::waitKey(0);
-  }
+  cv::Mat modifiedImage = cv::imdecode(receiveBuffer, cv::IMREAD_COLOR);
+  cv::imshow("Modified Image", modifiedImage);
+  cv::waitKey(0);
 
   // Close the client socket
   close(clientSocket);
