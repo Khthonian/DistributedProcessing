@@ -1,4 +1,5 @@
 // Copyright 2023 Stewart Charles Fisher II
+#pragma once
 
 #ifndef SRC_PROCESSING_H_
 #define SRC_PROCESSING_H_

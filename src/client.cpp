@@ -18,22 +18,6 @@
 
 #include "transmission.h"
 
-// Define fragment size
-const int FRAGMENT_SIZE = 4096;
-
-// Define a function to send the image in fragments
-void sendImage(const int socket, const std::vector<uchar>& buffer) {
-  for (size_t i = 0; i < buffer.size(); i += FRAGMENT_SIZE) {
-    size_t fragmentLength =
-        std::min(buffer.size() - i, static_cast<size_t>(FRAGMENT_SIZE));
-    std::vector<uchar> fragment(buffer.begin() + i,
-                                buffer.begin() + i + fragmentLength);
-
-    // Send fragment
-    send(socket, fragment.data(), fragment.size(), 0);
-  }
-}
-
 int main(int argc, char** argv) {
   if (argc != 5) {
     std::cerr << "Usage: " << argv[0]
@@ -99,14 +83,11 @@ int main(int argc, char** argv) {
   // Send image
   std::vector<uchar> sendBuffer;
   cv::imencode(".jpg", originalImage, sendBuffer);
-  std::cout << "Ping 1" << std::endl;
-  Transmission clientTransmitter;
-  clientTransmitter.sendImage(clientSocket, sendBuffer);
-  std::cout << "Ping 2" << std::endl;
+  sendImage(clientSocket, sendBuffer);
+
   // Receive modified image
   std::vector<uchar> receiveBuffer;
-  clientTransmitter.receiveImage(clientSocket, receiveBuffer);
-  std::cout << "Ping 3" << std::endl;
+  receiveImage(clientSocket, receiveBuffer);
 
   cv::Mat modifiedImage = cv::imdecode(receiveBuffer, cv::IMREAD_COLOR);
   cv::imshow("Modified Image", modifiedImage);

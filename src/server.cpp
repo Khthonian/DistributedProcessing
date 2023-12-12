@@ -7,7 +7,6 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include <cstdint>
 #include <iostream>
 #include <mutex>
 #include <opencv2/highgui.hpp>
@@ -18,21 +17,14 @@
 #include "processing.h"
 #include "transmission.h"
 
-// Define the max amount of clients
-const int MAX_CLIENTS = 100;
-
-// Define fragment size
-const int FRAGMENT_SIZE = 4096;
-
 // Define a mutex to synchronize access to shared resources
-std::mutex mutex;
+std::mutex clientSocketMutex;
 
 // Define a function to handle communication with a specific client
 void handleClient(int clientSocket) {
   // Receive original image
   std::vector<uchar> receiveBuffer;
-  Transmission serverTransmitter;
-  serverTransmitter.receiveImage(clientSocket, receiveBuffer);
+  receiveImage(clientSocket, receiveBuffer);
 
   // Decode the image
   cv::Mat originalImage = cv::imdecode(receiveBuffer, cv::IMREAD_COLOR);
@@ -42,15 +34,13 @@ void handleClient(int clientSocket) {
 
   // Apply a gamma change
   cv::Mat modifiedImage;
-  double gammaValue = 0.5;
+  double gammaValue = 2.0;
   imageFilters.gammaCorrection(originalImage, modifiedImage, gammaValue);
-
-  std::cout << "Ping 1" << std::endl;
 
   // Send modified image
   std::vector<uchar> sendBuffer;
   cv::imencode(".jpg", modifiedImage, sendBuffer);
-  serverTransmitter.sendImage(clientSocket, sendBuffer);
+  sendImage(clientSocket, sendBuffer);
 
   // Close the client socket after handling the communication
   close(clientSocket);
@@ -96,21 +86,22 @@ int main() {
     int clientSocket =
         accept(serverSocket, (struct sockaddr*)&clientAddr, &clientAddrLen);
     if (clientSocket != -1) {
-      if (clientSockets.size() < MAX_CLIENTS) {
-        clientSockets.push_back(clientSocket);
+      // Lock the mutex before accessing the vector
+      std::lock_guard<std::mutex> guard(clientSocketMutex);
 
-        char clientIP[INET_ADDRSTRLEN];
-        inet_ntop(AF_INET, &(clientAddr.sin_addr), clientIP, INET_ADDRSTRLEN);
-        std::cout << "Client connected: " << clientIP << std::endl;
+      clientSockets.push_back(clientSocket);
 
-        // Create a thread for the new client
-        std::thread clientThread(handleClient, clientSocket);
-        clientThread.detach();
-      } else {
-        std::cerr << "Error: Client connection could not be established!"
-                  << std::endl;
-        close(clientSocket);
-      }
+      char clientIP[INET_ADDRSTRLEN];
+      inet_ntop(AF_INET, &(clientAddr.sin_addr), clientIP, INET_ADDRSTRLEN);
+      std::cout << "Client connected: " << clientIP << std::endl;
+
+      // Create a thread for the new client
+      std::thread clientThread(handleClient, clientSocket);
+      clientThread.detach();
+    } else {
+      std::cerr << "Error: Client connection could not be established!"
+                << std::endl;
+      close(clientSocket);
     }
   }
 
