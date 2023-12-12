@@ -14,11 +14,11 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # Server executable
-add_executable(server ${SRC_DIR}/server.cpp ${SRC_DIR}/processing.cpp ${SRC_DIR}/processing.h)
+add_executable(server ${SRC_DIR}/server.cpp ${SRC_DIR}/processing.cpp ${SRC_DIR}/processing.h ${SRC_DIR}/transmission.cpp ${SRC_DIR}/transmission.h)
 target_link_libraries(server PRIVATE ${OpenCV_LIBS})
 
 # Client executable
-add_executable(client ${SRC_DIR}/client.cpp)
+add_executable(client ${SRC_DIR}/client.cpp ${SRC_DIR}/transmission.cpp ${SRC_DIR}/transmission.h)
 target_link_libraries(client PRIVATE ${OpenCV_LIBS})
 
 # Set the output directory for the executables
