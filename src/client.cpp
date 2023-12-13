@@ -85,6 +85,9 @@ int main(int argc, char** argv) {
   cv::imencode(".jpg", originalImage, sendBuffer);
   sendImage(clientSocket, sendBuffer);
 
+  // Send the instruction
+  sendInstruction(clientSocket, operation, param);
+
   // Receive modified image
   std::vector<uchar> receiveBuffer;
   receiveImage(clientSocket, receiveBuffer);
