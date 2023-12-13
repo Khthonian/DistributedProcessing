@@ -1,37 +1,83 @@
 // Copyright 2023 Stewart Charles Fisher II
 
+#include <opencv2/core.hpp>
+#include <opencv2/core/saturate.hpp>
+
 #include "processing.h"
 
-void ImageFilters::grayscale(cv::Mat& image) {
-  cv::cvtColor(image, image, cv::COLOR_BGR2GRAY);
+// Resize filter class
+
+ResizeFilter::ResizeFilter(double multiplier) : _multiplier_(multiplier) {}
+
+void ResizeFilter::applyFilter(cv::Mat& image, cv::Mat& newImage) {
+  // Determine the new width and height
+  int newWidth = static_cast<int>(image.cols * _multiplier_);
+  int newHeight = static_cast<int>(image.rows * _multiplier_);
+
+  // Resize the image
+  cv::resize(image, newImage, cv::Size(newWidth, newHeight));
 }
 
-void ImageFilters::resize(cv::Mat& image, int width, int height) {
-  cv::resize(image, image, cv::Size(width, height));
+// Rotate filter class
+
+RotateFilter::RotateFilter(double angle) : _angle_(angle) {}
+
+void RotateFilter::applyFilter(cv::Mat& image, cv::Mat& newImage) {
+  // Determine the centre of rotation
+  cv::Point2f centre(image.cols / 2.0F, image.rows / 2.0F);
+
+  // Get the rotation matrix
+  cv::Mat rotateMatrix = cv::getRotationMatrix2D(centre, _angle_, 1.0);
+
+  // Determine the bounding rectangle
+  cv::Rect2f boundRect =
+      cv::RotatedRect(cv::Point2f(), image.size(), _angle_).boundingRect2f();
+
+  // Adjust the rotation matrix to account for translation
+  rotateMatrix.at<double>(0, 2) += boundRect.width / 2.0 - centre.x;
+  rotateMatrix.at<double>(1, 2) += boundRect.height / 2.0 - centre.y;
+
+  // Rotate the image
+  cv::warpAffine(image, newImage, rotateMatrix, boundRect.size());
 }
 
-void ImageFilters::rotate(cv::Mat& image, double angle) {
-  cv::Point2f center(image.cols / 2.0, image.rows / 2.0);
-  cv::Mat rotationMatrix = cv::getRotationMatrix2D(center, angle, 1.0);
-  cv::warpAffine(image, image, rotationMatrix, image.size());
+// Flip filter class
+
+FlipFilter::FlipFilter(int flipCode) : _flipCode_(flipCode) {}
+
+void FlipFilter::applyFilter(cv::Mat& image, cv::Mat& newImage) {
+  // Perform the flip
+  cv::flip(image, newImage, _flipCode_);
 }
 
-void ImageFilters::flip(cv::Mat& image, bool horizontal, bool vertical) {
-  if (horizontal) cv::flip(image, image, 1);  // Flip horizontally
-  if (vertical) cv::flip(image, image, 0);    // Flip vertically
+// Brightness filter class
+
+BrightnessFilter::BrightnessFilter(double alpha) : _alpha_(alpha) {}
+
+void BrightnessFilter::applyFilter(cv::Mat& image, cv::Mat& newImage) {
+  // Adjust the brightness
+  image.convertTo(newImage, -1, _alpha_, 0);
 }
 
-void ImageFilters::gaussianBlur(cv::Mat& image, int kernelSize) {
-  cv::GaussianBlur(image, image, cv::Size(kernelSize, kernelSize), 0);
+// Contrast filter class
+
+ContrastFilter::ContrastFilter(double beta) : _beta_(beta) {}
+
+void ContrastFilter::applyFilter(cv::Mat& image, cv::Mat& newImage) {
+  // Adjust the contrast
+  image.convertTo(newImage, -1, 1, _beta_);
 }
 
-void ImageFilters::gammaCorrection(cv::Mat& image, cv::Mat& newImage,
-                                   double gamma) {
-  cv::Mat lookupTable(1, 256, CV_8U);
-  uchar* ptr = lookupTable.ptr();
+// Gamma filter class
 
-  for (int i = 0; i < 256; ++i)
-    ptr[i] = cv::saturate_cast<uchar>(pow(i / 255.0, gamma) * 255.0);
+GammaFilter::GammaFilter(double gamma) : _gamma_(gamma) {}
 
-  cv::LUT(image, lookupTable, newImage);
+void GammaFilter::applyFilter(cv::Mat& image, cv::Mat& newImage) {
+  cv::Mat lookUp(1, 256, CV_8U);
+  uchar* p = lookUp.ptr();
+  for (int i = 0; i < 256; i++) {
+    p[i] = cv::saturate_cast<uchar>(pow(i / 255.0, _gamma_) * 255.0);
+  }
+
+  cv::LUT(image, lookUp, newImage);
 }
