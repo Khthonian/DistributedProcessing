@@ -1,14 +1,15 @@
 // Copyright 2023 Stewart Charles Fisher II
-#pragma once
 
+// Include libraries
 #include <opencv2/core.hpp>
 #include <opencv2/core/mat.hpp>
+#include <opencv2/core/saturate.hpp>
 #include <opencv2/core/types.hpp>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/opencv.hpp>
+
 #ifndef SRC_PROCESSING_H_
 #define SRC_PROCESSING_H_
-
-#include <opencv2/opencv.hpp>
 
 // Define a base class for all filters
 class ImageFilter {

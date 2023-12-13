@@ -2,7 +2,6 @@
 
 #include "threadPool.h"
 
-// ThreadPool Constructor
 ThreadPool::ThreadPool(size_t threads) : stop(false) {
   // Create the maximum number of worker threads
   for (size_t i = 0; i < threads; ++i)
@@ -31,7 +30,6 @@ ThreadPool::ThreadPool(size_t threads) : stop(false) {
     });
 }
 
-// ThreadPool Destructor
 ThreadPool::~ThreadPool() {
   {
     // Lock the mutex

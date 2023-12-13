@@ -1,9 +1,5 @@
 // Copyright 2023 Stewart Charles Fisher II
 
-#include <opencv2/core.hpp>
-#include <opencv2/core/saturate.hpp>
-#include <opencv2/imgproc.hpp>
-
 #include "processing.h"
 
 // Resize filter class
