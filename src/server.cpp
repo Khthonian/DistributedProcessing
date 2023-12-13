@@ -11,6 +11,7 @@
 #include <mutex>
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
+#include <string>
 #include <vector>
 
 #include "processing.h"
@@ -28,6 +29,10 @@ void handleClient(int clientSocket) {
 
   // Decode the image
   cv::Mat originalImage = cv::imdecode(receiveBuffer, cv::IMREAD_COLOR);
+
+  // Receive the instruction
+  std::string operation, param;
+  receiveInstruction(clientSocket, operation, param);
 
   // Initialise ImageFilters object
   ImageFilters imageFilters;
