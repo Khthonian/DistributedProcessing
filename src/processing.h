@@ -1,30 +1,97 @@
 // Copyright 2023 Stewart Charles Fisher II
 #pragma once
 
+#include <opencv2/core.hpp>
+#include <opencv2/core/types.hpp>
+#include <opencv2/imgproc.hpp>
 #ifndef SRC_PROCESSING_H_
 #define SRC_PROCESSING_H_
 
 #include <opencv2/opencv.hpp>
 
-class ImageFilters {
+// Define a base class for all filters
+class ImageFilter {
  public:
-  // Convert the image to grayscale
-  static void grayscale(cv::Mat& image);
+  // Pure virtual filter application function
+  virtual void applyFilter(cv::Mat& image, cv::Mat& newImage) = 0;
+};
 
-  // Resize the image
-  static void resize(cv::Mat& image, int width, int height);
+// Define a derived class for resizing
+class ResizeFilter : public ImageFilter {
+ private:
+  // Define the multiplier
+  double _multiplier_;
 
-  // Rotate the image by a given angle (in degrees)
-  static void rotate(cv::Mat& image, double angle);
+ public:
+  ResizeFilter(double multiplier);
 
-  // Flip the image horizontally or vertically
-  static void flip(cv::Mat& image, bool horizontal, bool vertical);
+  void applyFilter(cv::Mat& image, cv::Mat& newImage) override;
+};
 
-  // Apply Gaussian blur to the image
-  static void gaussianBlur(cv::Mat& image, int kernelSize);
+// Define a derived class for rotating
+class RotateFilter : public ImageFilter {
+ private:
+  // Define the rotation angle
+  double _angle_;
 
-  // Apply gamma correction to the image
-  static void gammaCorrection(cv::Mat& image, cv::Mat& newImage, double gamma);
+ public:
+  RotateFilter(double angle);
+
+  void applyFilter(cv::Mat& image, cv::Mat& newImage) override;
+};
+
+// Define derived class for flipping
+class FlipFilter : public ImageFilter {
+ private:
+  // Define the flip code
+  int _flipCode_;
+
+ public:
+  FlipFilter(int flipCode);
+
+  void applyFilter(cv::Mat& image, cv::Mat& newImage) override;
+};
+
+// Define an abstract derived class for colour adjustment filters
+class ColourAdjustFilter : public ImageFilter {
+ public:
+  // Abstract class
+};
+
+// Define derived class for brightness adjustment
+class BrightnessFilter : public ColourAdjustFilter {
+ private:
+  // Define the alpha value
+  double _alpha_;
+
+ public:
+  BrightnessFilter(double alpha);
+
+  void applyFilter(cv::Mat& image, cv::Mat& newImage) override;
+};
+
+// Define derived class for contrast adjustment
+class ContrastFilter : public ColourAdjustFilter {
+ private:
+  // Define the beta value
+  double _beta_;
+
+ public:
+  ContrastFilter(double beta);
+
+  void applyFilter(cv::Mat& image, cv::Mat& newImage) override;
+};
+
+// Define derived class for gamma correction
+class GammaFilter : public ColourAdjustFilter {
+ private:
+  // Define the gamma value
+  double _gamma_;
+
+ public:
+  GammaFilter(double gamma);
+
+  void applyFilter(cv::Mat& image, cv::Mat& newImage) override;
 };
 
 #endif  // SRC_PROCESSING_H_
