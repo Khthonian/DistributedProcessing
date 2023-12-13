@@ -33,3 +33,21 @@ void receiveImage(const int socket, std::vector<uchar>& buffer) {
                   fragment.begin() + bytesReceived);
   }
 }
+
+void sendInstruction(const int socket, const std::string& operation,
+                     const std::string& param) {
+  // Send operation
+  send(socket, operation.c_str(), operation.size(), 0);
+
+  // Send parameter
+  send(socket, param.c_str(), param.size(), 0);
+}
+
+void receiveInstruction(const int socket, std::string& operation,
+                        std::string& param) {
+  // Receive operation
+  int bytesReceived = recv(socket, operation.data(), operation.size(), 0);
+
+  // Receive parameter
+  bytesReceived = recv(socket, param.data(), param.size(), 0);
+}
