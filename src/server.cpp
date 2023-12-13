@@ -18,6 +18,9 @@
 #include "threadPool.h"
 #include "transmission.h"
 
+// Define a vector to keep track of connected clients
+std::vector<int> clientSockets;
+
 // Define a mutex to synchronize access to shared resources
 std::mutex clientSocketMutex;
 
@@ -35,12 +38,12 @@ void handleClient(int clientSocket) {
   receiveInstruction(clientSocket, operation, param);
 
   // Initialise ImageFilters object
-  ImageFilters imageFilters;
+  GammaFilter gammaFilter(1.0);
 
   // Apply a gamma change
   cv::Mat modifiedImage;
-  double gammaValue = 2.0;
-  imageFilters.gammaCorrection(originalImage, modifiedImage, gammaValue);
+  double gammaValue = 1.0;
+  gammaFilter.applyFilter(originalImage, modifiedImage);
 
   // Send modified image
   std::vector<uchar> sendBuffer;
@@ -84,8 +87,6 @@ int main() {
 
   // Initialise thread pool with 4 threads
   ThreadPool pool(4);
-
-  std::vector<int> clientSockets;  // To keep track of connected clients
 
   while (true) {
     // Accept incoming client connections
