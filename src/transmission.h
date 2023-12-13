@@ -1,9 +1,6 @@
 // Copyright 2023 Stewart Charles Fisher II
-#pragma once
 
-#ifndef SRC_TRANSMISSION_H_
-#define SRC_TRANSMISSION_H_
-
+// Include libraries
 #include <opencv2/core/hal/interface.h>
 #include <sys/socket.h>
 
@@ -13,6 +10,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
+
+#ifndef SRC_TRANSMISSION_H_
+#define SRC_TRANSMISSION_H_
 
 // Define fragment size
 const int FRAGMENT_SIZE = 4096;

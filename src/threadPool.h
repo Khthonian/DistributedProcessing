@@ -1,9 +1,6 @@
 // Copyright 2023 Stewart Charles Fisher II
-#pragma once
 
-#ifndef SRC_THREADPOOL_H_
-#define SRC_THREADPOOL_H_
-
+// Include libraries
 #include <condition_variable>
 #include <cstddef>
 #include <functional>
@@ -13,6 +10,9 @@
 #include <thread>
 #include <type_traits>
 #include <vector>
+
+#ifndef SRC_THREADPOOL_H_
+#define SRC_THREADPOOL_H_
 
 class ThreadPool {
  private:
@@ -39,6 +39,7 @@ class ThreadPool {
       -> std::future<typename std::result_of<F(Args...)>::type>;
 };
 
+// Include template
 #include "threadPool.tpp"
 
 #endif  // SRC_THREADPOOL_H_
