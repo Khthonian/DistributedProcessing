@@ -39,7 +39,6 @@ class ThreadPool {
       -> std::future<typename std::result_of<F(Args...)>::type>;
 };
 
-// Include template file
 #include "threadPool.tpp"
 
 #endif  // SRC_THREADPOOL_H_
