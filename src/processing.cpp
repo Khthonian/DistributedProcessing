@@ -2,6 +2,7 @@
 
 #include <opencv2/core.hpp>
 #include <opencv2/core/saturate.hpp>
+#include <opencv2/imgproc.hpp>
 
 #include "processing.h"
 
@@ -80,4 +81,48 @@ void GammaFilter::applyFilter(cv::Mat& image, cv::Mat& newImage) {
   }
 
   cv::LUT(image, lookUp, newImage);
+}
+
+// Colour convert filter class
+
+void ColourConvertFilter::applyFilter(cv::Mat& image, cv::Mat& newImage) {
+  cv::cvtColor(image, newImage, getConversionCode());
+}
+
+// RGB filter class
+
+int RGBFilter::getConversionCode() const { return cv::COLOR_BGR2RGB; }
+
+// HSV filter class
+
+int HSVFilter::getConversionCode() const { return cv::COLOR_BGR2HSV; }
+
+// Greyscale filter class
+
+int GreyFilter::getConversionCode() const { return cv::COLOR_BGR2GRAY; }
+
+// YCrCb filter class
+
+int YCCFilter::getConversionCode() const { return cv::COLOR_BGR2YCrCb; }
+
+// HSL filter class
+
+int HSLFilter::getConversionCode() const { return cv::COLOR_BGR2HLS; }
+
+// Gaussian blur class
+
+void GaussianFilter::applyFilter(cv::Mat& image, cv::Mat& newImage) {
+  cv::GaussianBlur(image, newImage, _kernelSize_, 0);
+}
+
+// Box blur class
+
+void BoxFilter::applyFilter(cv::Mat& image, cv::Mat& newImage) {
+  cv::blur(image, newImage, _kernelSize_);
+}
+
+// Sharpening class
+
+void SharpFilter::applyFilter(cv::Mat& image, cv::Mat& newImage) {
+  cv::filter2D(image, newImage, image.depth(), _sharpKernel_);
 }
