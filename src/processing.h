@@ -14,7 +14,7 @@
 // Define a base class for all filters
 class ImageFilter {
  public:
-  ~ImageFilter() {}
+  //~ImageFilter() {}
 
   // Pure virtual filter application function
   virtual void applyFilter(cv::Mat& image, cv::Mat& newImage) = 0;
@@ -109,31 +109,31 @@ class ColourConvertFilter : public ImageFilter {
 };
 
 // Define derived class for RGB conversion
-class RGBFilter : ColourConvertFilter {
+class RGBFilter : public ColourConvertFilter {
  protected:
   int getConversionCode() const override;
 };
 
 // Define derived class for HSV conversion
-class HSVFilter : ColourConvertFilter {
+class HSVFilter : public ColourConvertFilter {
  protected:
   int getConversionCode() const override;
 };
 
 // Define derived class for greyscale conversion
-class GreyFilter : ColourConvertFilter {
+class GreyFilter : public ColourConvertFilter {
  protected:
   int getConversionCode() const override;
 };
 
 // Define derived class for YCrCb conversion
-class YCCFilter : ColourConvertFilter {
+class YCCFilter : public ColourConvertFilter {
  protected:
   int getConversionCode() const override;
 };
 
 // Define derived class for HSL conversion
-class HSLFilter : ColourConvertFilter {
+class HSLFilter : public ColourConvertFilter {
  protected:
   int getConversionCode() const override;
 };
