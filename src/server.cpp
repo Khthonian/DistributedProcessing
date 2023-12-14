@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "instruction.h"
 #include "processing.h"
 #include "threadPool.h"
 #include "transmission.h"
@@ -38,13 +39,10 @@ void handleClient(int clientSocket) {
   // Decode the image
   cv::Mat originalImage = cv::imdecode(receiveBuffer, cv::IMREAD_COLOR);
 
-  // Initialise ImageFilters object
-  GammaFilter gammaFilter(1.0);
-
-  // Apply a gamma change
+  // Apply a chosen filter
   cv::Mat modifiedImage;
-  double gammaValue = 1.0;
-  gammaFilter.applyFilter(originalImage, modifiedImage);
+  auto filter = createFilter(operation, param);
+  filter->applyFilter(originalImage, modifiedImage);
 
   // Send modified image
   std::vector<uchar> sendBuffer;
