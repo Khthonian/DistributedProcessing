@@ -26,16 +26,17 @@ std::mutex clientSocketMutex;
 
 // Define a function to handle communication with a specific client
 void handleClient(int clientSocket) {
+  // Receive the instruction
+  std::string operation, param;
+  receiveInstruction(clientSocket, operation, param);
+  std::cout << operation << " " << param << std::endl;
+
   // Receive original image
   std::vector<uchar> receiveBuffer;
   receiveImage(clientSocket, receiveBuffer);
 
   // Decode the image
   cv::Mat originalImage = cv::imdecode(receiveBuffer, cv::IMREAD_COLOR);
-
-  // Receive the instruction
-  std::string operation, param;
-  receiveInstruction(clientSocket, operation, param);
 
   // Initialise ImageFilters object
   GammaFilter gammaFilter(1.0);
