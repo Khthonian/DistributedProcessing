@@ -1,5 +1,7 @@
 // Copyright 2023 Stewart Charles Fisher II
 
+#include <sys/socket.h>
+
 #include "transmission.h"
 
 void sendImage(const int socket, const std::vector<uchar>& buffer) {
@@ -36,18 +38,45 @@ void receiveImage(const int socket, std::vector<uchar>& buffer) {
 
 void sendInstruction(const int socket, const std::string& operation,
                      const std::string& param) {
+  // Ensure the strings fit within the buffer size
+  if (operation.size() >= 1024 || param.size() >= 1024) {
+    std::cerr << "Operation or parameter too long to send" << std::endl;
+    return;
+  }
+
   // Send operation
-  send(socket, operation.c_str(), operation.size(), 0);
+  if (send(socket, operation.c_str(), operation.size(), 0) < 0) {
+    std::cerr << "Failed to send operation" << std::endl;
+    return;
+  }
 
   // Send parameter
-  send(socket, param.c_str(), param.size(), 0);
+  if (send(socket, param.c_str(), param.size(), 0) < 0) {
+    std::cerr << "Failed to send parameter" << std::endl;
+    return;
+  }
 }
 
 void receiveInstruction(const int socket, std::string& operation,
                         std::string& param) {
+  char operationBuffer[1024] = {0};
+  char paramBuffer[1024] = {0};
+
   // Receive operation
-  int bytesReceived = recv(socket, operation.data(), operation.size(), 0);
+  int bytesReceived = recv(socket, operationBuffer, sizeof(operationBuffer), 0);
+  if (bytesReceived <= 0) {
+    // Handle error or closed connection
+    return;
+  }
+  // Convert to std::string
+  operation = std::string(operationBuffer, bytesReceived);
 
   // Receive parameter
-  bytesReceived = recv(socket, param.data(), param.size(), 0);
+  bytesReceived = recv(socket, paramBuffer, sizeof(paramBuffer), 0);
+  if (bytesReceived <= 0) {
+    // Handle error or closed connection
+    return;
+  }
+  // Convert to std::string
+  param = std::string(paramBuffer, bytesReceived);
 }

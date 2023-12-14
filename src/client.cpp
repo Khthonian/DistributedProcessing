@@ -80,13 +80,13 @@ int main(int argc, char** argv) {
   cv::waitKey(0);
   cv::destroyWindow("Original Image");
 
+  // Send the instruction
+  sendInstruction(clientSocket, operation, param);
+
   // Send image
   std::vector<uchar> sendBuffer;
   cv::imencode(".jpg", originalImage, sendBuffer);
   sendImage(clientSocket, sendBuffer);
-
-  // Send the instruction
-  sendInstruction(clientSocket, operation, param);
 
   // Receive modified image
   std::vector<uchar> receiveBuffer;
