@@ -1,7 +1,5 @@
 // Copyright 2023 Stewart Charles Fisher II
 
-#include <memory>
-
 #include "instruction.h"
 
 std::unordered_map<std::string, FilterRequirement> filterRequirements = {

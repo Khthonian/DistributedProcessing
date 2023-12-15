@@ -1,6 +1,7 @@
 // Copyright 2023 Stewart Charles Fisher II
 
 // Include libraries
+#include <netinet/in.h>
 #include <opencv2/core/hal/interface.h>
 #include <sys/socket.h>
 
