@@ -1,7 +1,5 @@
 // Copyright 2023 Stewart Charles Fisher II
 
-#include <sys/socket.h>
-
 #include "transmission.h"
 
 void sendImage(const int socket, const std::vector<uchar>& buffer) {
@@ -38,45 +36,44 @@ void receiveImage(const int socket, std::vector<uchar>& buffer) {
 
 void sendInstruction(const int socket, const std::string& operation,
                      const std::string& param) {
-  // Ensure the strings fit within the buffer size
-  if (operation.size() >= 1024 || param.size() >= 1024) {
-    std::cerr << "Operation or parameter too long to send" << std::endl;
-    return;
-  }
+  // Prepare length-prefixed messages
+  uint32_t opLength = htonl(operation.size());
+  uint32_t paramLength = htonl(param.size());
 
-  // Send operation
-  if (send(socket, operation.c_str(), operation.size(), 0) < 0) {
-    std::cerr << "Failed to send operation" << std::endl;
-    return;
-  }
+  // Send operation length and operation
+  send(socket, &opLength, sizeof(opLength), 0);
+  send(socket, operation.c_str(), operation.size(), 0);
 
-  // Send parameter
-  if (send(socket, param.c_str(), param.size(), 0) < 0) {
-    std::cerr << "Failed to send parameter" << std::endl;
-    return;
-  }
+  // Send parameter length and parameter
+  send(socket, &paramLength, sizeof(paramLength), 0);
+  send(socket, param.c_str(), param.size(), 0);
 }
 
 void receiveInstruction(const int socket, std::string& operation,
                         std::string& param) {
-  char operationBuffer[1024] = {0};
-  char paramBuffer[1024] = {0};
+  uint32_t opLength, paramLength;
+
+  // Receive operation length
+  recv(socket, &opLength, sizeof(opLength), 0);
+  opLength = ntohl(opLength);
 
   // Receive operation
-  int bytesReceived = recv(socket, operationBuffer, sizeof(operationBuffer), 0);
-  if (bytesReceived <= 0) {
-    // Handle error or closed connection
-    return;
-  }
-  // Convert to std::string
-  operation = std::string(operationBuffer, bytesReceived);
+  char* opBuffer = new char[opLength + 1];
+  recv(socket, opBuffer, opLength, 0);
+  opBuffer[opLength] = '\0';  // Null-terminate
+  operation = std::string(opBuffer, opLength);
+  delete[] opBuffer;
+
+  // Receive parameter length
+  recv(socket, &paramLength, sizeof(paramLength), 0);
+  paramLength = ntohl(paramLength);
 
   // Receive parameter
-  bytesReceived = recv(socket, paramBuffer, sizeof(paramBuffer), 0);
-  if (bytesReceived <= 0) {
-    // Handle error or closed connection
-    return;
-  }
-  // Convert to std::string
-  param = std::string(paramBuffer, bytesReceived);
+  char* paramBuffer = new char[paramLength + 1];
+  recv(socket, paramBuffer, paramLength, 0);
+
+  // Null terminate
+  paramBuffer[paramLength] = '\0';
+  param = std::string(paramBuffer, paramLength);
+  delete[] paramBuffer;
 }
