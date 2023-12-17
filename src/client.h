@@ -23,21 +23,21 @@
 #ifndef SRC_CLIENT_H_
 #define SRC_CLIENT_H_
 
+// Define an enumeration for parameter types
+enum class ParamType {
+  Double,
+  Integer,
+  String,
+};
+
+// Define s struct for the filter requirements
+struct FilterRequirement {
+  ParamType paramType;
+  std::string expectedValue;
+};
+
 class Client : public Peer {
  private:
-  // Define an enumeration for parameter types
-  enum class ParamType {
-    Double,
-    Integer,
-    String,
-  };
-
-  // Define s struct for the filter requirements
-  struct FilterRequirement {
-    ParamType paramType;
-    std::string expectedValue;
-  };
-
   // Define a map to hold the requirements for each filter
   std::unordered_map<std::string, FilterRequirement> filterRequirements = {
       {"resize", {ParamType::Double, ""}},
@@ -60,9 +60,9 @@ class Client : public Peer {
 
  public:
   // Define a function to manage client operation
-  void operateClient(const std::string serverAddress,
-                     const std::string imagePath, const std::string operation,
-                     const std::string param);
+  void operateClient(const std::string& serverAddress,
+                     const std::string& imagePath, const std::string& operation,
+                     const std::string& param);
 };
 
 #endif  // SRC_CLIENT_H_
