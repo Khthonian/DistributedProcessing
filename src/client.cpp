@@ -117,7 +117,11 @@ void Client::operateClient(const std::string& serverAddress,
   cv::waitKey(0);
 
   // Close the client socket
+#ifdef _WIN32
+  closesocket(clientSocket);
+#else
   close(clientSocket);
+#endif  // _WIN32
 }
 
 void Client::_sendInstruction_(const int socket, const std::string& operation,
@@ -136,6 +140,16 @@ void Client::_sendInstruction_(const int socket, const std::string& operation,
 }
 
 int main(int argc, char** argv) {
+// Initialise Winsock for Windows
+#ifdef _WIN32
+  WSADATA wasData;
+  int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+  if (result != 0) {
+    std::cerr << "Error: WSAStartup failed with error: " << result << std::endl;
+    return -1;
+  }
+#endif  // _WIN32
+
   if (argc != 5) {
     std::cerr << "Usage: " << argv[0]
               << " <server_ip:port> <image_path> <operation> <param>"
@@ -153,5 +167,8 @@ int main(int argc, char** argv) {
 
   client.operateClient(serverAddress, imagePath, operation, param);
 
+#ifdef _WIN32
+  WSACleanup();
+#endif  // _WIN32
   return 0;
 }

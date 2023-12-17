@@ -10,11 +10,16 @@ void Peer::sendImage(const int socket, const std::vector<uchar>& buffer) {
                                 buffer.begin() + i + fragmentLength);
 
     // Send fragment
-    send(socket, fragment.data(), fragment.size(), 0);
+    send(socket, reinterpret_cast<const char*>(fragment.data()),
+         fragment.size(), 0);
   }
 
-  // Shutdown socket
+// Shutdown socket
+#ifdef _WIN32
+  shutdown(socket, SD_SEND);
+#else
   shutdown(socket, SHUT_WR);
+#endif  // _WIN32
 }
 
 void Peer::receiveImage(const int socket, std::vector<uchar>& buffer) {

@@ -27,7 +27,11 @@ void Server::_handleClient_(int clientSocket) {
   sendImage(clientSocket, sendBuffer);
 
   // Close the client socket after handling the communication
+#ifdef _WIN32
+  closesocket(clientSocket);
+#else
   close(clientSocket);
+#endif  // _WIN32
 }
 
 void Server::operateServer() {
@@ -57,7 +61,11 @@ void Server::operateServer() {
   // Listen for incoming connections
   if (listen(serverSocket, 5) == -1) {
     std::cerr << "Error: Connections could not be listened for!" << std::endl;
+#ifdef _WIN32
+    closesocket(serverSocket);
+#else
     close(serverSocket);
+#endif  // _WIN32
     exit(-1);
   }
 
@@ -90,7 +98,11 @@ void Server::operateServer() {
     }
   }
 
+#ifdef _WIN32
+  closesocket(serverSocket);
+#else
   close(serverSocket);
+#endif  // _WIN32
 }
 
 std::unique_ptr<ImageFilter> Server::_createFilter_(
@@ -174,7 +186,20 @@ void Server::_receiveInstruction_(const int socket, std::string& operation,
 }
 
 int main() {
+// Initialise Winsock for Windows
+#ifdef _WIN32
+  WSADATA wasData;
+  int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+  if (result != 0) {
+    std::cerr << "Error: WSAStartup failed with error: " << result << std::endl;
+    return -1;
+  }
+#endif  // _WIN32
+
   Server server;
   server.operateServer();
+#ifdef _WIN32
+  WSACleanup();
+#endif  // _WIN32
   return 0;
 }
