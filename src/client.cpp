@@ -2,13 +2,13 @@
 
 #include "client.h"
 
-bool Client::validateFilterInput(const std::string& operation,
-                                 const std::string& param) {
+bool Client::_validateFilterInput_(const std::string& operation,
+                                   const std::string& param) {
   // Look up the operation in the map
-  auto it = filterRequirements.find(operation);
+  auto it = _filterRequirements_.find(operation);
 
   // If the operation is not found, alert user
-  if (it == filterRequirements.end()) {
+  if (it == _filterRequirements_.end()) {
     throw std::invalid_argument("Error: Invalid filter operation!");
   }
 
@@ -47,7 +47,7 @@ void Client::operateClient(const std::string& serverAddress,
                            const std::string& operation,
                            const std::string& param) {
   // Validate the operation and parameter inputs
-  if (!validateFilterInput(operation, param)) {
+  if (!_validateFilterInput_(operation, param)) {
     std::cout << "Error: Invalid operation/parameter input!";
     exit(-1);
   }
@@ -101,7 +101,7 @@ void Client::operateClient(const std::string& serverAddress,
   cv::destroyWindow("Original Image");
 
   // Send the instruction
-  sendInstruction(clientSocket, operation, param);
+  _sendInstruction_(clientSocket, operation, param);
 
   // Send image
   std::vector<uchar> sendBuffer;
@@ -120,8 +120,8 @@ void Client::operateClient(const std::string& serverAddress,
   close(clientSocket);
 }
 
-void Client::sendInstruction(const int socket, const std::string& operation,
-                             const std::string& param) {
+void Client::_sendInstruction_(const int socket, const std::string& operation,
+                               const std::string& param) {
   // Prepare length-prefixed messages
   uint32_t opLength = htonl(operation.size());
   uint32_t paramLength = htonl(param.size());

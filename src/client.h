@@ -39,7 +39,7 @@ struct FilterRequirement {
 class Client : public Peer {
  private:
   // Define a map to hold the requirements for each filter
-  std::unordered_map<std::string, FilterRequirement> filterRequirements = {
+  std::unordered_map<std::string, FilterRequirement> _filterRequirements_ = {
       {"resize", {ParamType::Double, ""}},
       {"rotate", {ParamType::Double, ""}},
       {"flip", {ParamType::Integer, ""}},
@@ -51,12 +51,12 @@ class Client : public Peer {
   };
 
   // Define a function to validate the user input
-  bool validateFilterInput(const std::string& operation,
-                           const std::string& param);
+  bool _validateFilterInput_(const std::string& operation,
+                             const std::string& param);
 
   // Send the instruction
-  void sendInstruction(const int socket, const std::string& operation,
-                       const std::string& param);
+  void _sendInstruction_(const int socket, const std::string& operation,
+                         const std::string& param);
 
  public:
   // Define a function to manage client operation

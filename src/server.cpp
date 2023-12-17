@@ -3,10 +3,10 @@
 #include "server.h"
 
 // Define a function to handle communication with a specific client
-void Server::handleClient(int clientSocket) {
+void Server::_handleClient_(int clientSocket) {
   // Receive the instruction
   std::string operation, param;
-  receiveInstruction(clientSocket, operation, param);
+  _receiveInstruction_(clientSocket, operation, param);
   std::cout << operation << " " << param << std::endl;
 
   // Receive original image
@@ -18,7 +18,7 @@ void Server::handleClient(int clientSocket) {
 
   // Apply a chosen filter
   cv::Mat modifiedImage;
-  auto filter = createFilter(operation, param);
+  auto filter = _createFilter_(operation, param);
   filter->applyFilter(originalImage, modifiedImage);
 
   // Send modified image
@@ -72,9 +72,9 @@ void Server::operateServer() {
         accept(serverSocket, (struct sockaddr*)&clientAddr, &clientAddrLen);
     if (clientSocket != -1) {
       // Lock the mutex before accessing the vector
-      std::lock_guard<std::mutex> guard(clientSocketMutex);
+      std::lock_guard<std::mutex> guard(_clientSocketMutex_);
 
-      clientSockets.push_back(clientSocket);
+      _clientSockets_.push_back(clientSocket);
 
       char clientIP[INET_ADDRSTRLEN];
       inet_ntop(AF_INET, &(clientAddr.sin_addr), clientIP, INET_ADDRSTRLEN);
@@ -82,7 +82,7 @@ void Server::operateServer() {
 
       // Create a thread for the new client using lambda function
       pool.enqueue(
-          [this, clientSocket]() { this->handleClient(clientSocket); });
+          [this, clientSocket]() { this->_handleClient_(clientSocket); });
     } else {
       std::cerr << "Error: Client connection could not be established!"
                 << std::endl;
@@ -93,8 +93,8 @@ void Server::operateServer() {
   close(serverSocket);
 }
 
-std::unique_ptr<ImageFilter> Server::createFilter(const std::string& operation,
-                                                  const std::string& param) {
+std::unique_ptr<ImageFilter> Server::_createFilter_(
+    const std::string& operation, const std::string& param) {
   std::istringstream iss(param);
   double numericParam;
   int intParam;
@@ -144,8 +144,8 @@ std::unique_ptr<ImageFilter> Server::createFilter(const std::string& operation,
   return nullptr;
 }
 
-void Server::receiveInstruction(const int socket, std::string& operation,
-                                std::string& param) {
+void Server::_receiveInstruction_(const int socket, std::string& operation,
+                                  std::string& param) {
   uint32_t opLength, paramLength;
 
   // Receive operation length
