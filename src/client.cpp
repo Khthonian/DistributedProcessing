@@ -1,42 +1,62 @@
 // Copyright 2023 Stewart Charles Fisher II
 
-// Import libraries
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <opencv2/core/hal/interface.h>
-#include <sys/socket.h>
-#include <unistd.h>
+#include "client.h"
 
-#include <algorithm>
-#include <cstddef>
-#include <iostream>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/opencv.hpp>
-#include <string>
-#include <vector>
+bool Client::validateFilterInput(const std::string& operation,
+                                 const std::string& param) {
+  // Look up the operation in the map
+  auto it = filterRequirements.find(operation);
 
-#include "transmission.h"
-
-int main(int argc, char** argv) {
-  if (argc != 5) {
-    std::cerr << "Usage: " << argv[0]
-              << " <server_ip:port> <image_path> <operation> <param>"
-              << std::endl;
-    return -1;
+  // If the operation is not found, alert user
+  if (it == filterRequirements.end()) {
+    throw std::invalid_argument("Error: Invalid filter operation!");
   }
 
-  // Extract command-line arguments
-  std::string serverAddress = argv[1];
-  std::string imagePath = argv[2];
-  std::string operation = argv[3];
-  std::string param = argv[4];
+  // Get the requirement for the operation
+  const auto& requirement = it->second;
+
+  // Check the parameter type and validate
+  switch (requirement.paramType) {
+    case ParamType::Integer:
+      // Check if all characters are digits
+      return std::all_of(param.begin(), param.end(), ::isdigit);
+    case ParamType::Double:
+      // Check if the string can be a double
+      char* end;
+      strtod(param.c_str(), &end);
+      return end != param.c_str() && *end == '\0';
+    case ParamType::String: {
+      // Split the expected values and check for a match
+      std::istringstream iss(requirement.expectedValue);
+      std::string token;
+      while (std::getline(iss, token, '|')) {
+        if (param == token) {
+          return true;
+        }
+      }
+      return false;
+    }
+    default:
+      // Throw an exception otherwise
+      throw std::invalid_argument("Error: Unknown parameter type");
+  }
+}
+
+void Client::operateClient(const std::string serverAddress,
+                           const std::string imagePath,
+                           const std::string operation,
+                           const std::string param) {
+  // Validate the operation and parameter inputs
+  if (!validateFilterInput(operation, param)) {
+    std::cout << "Error: Invalid operation/parameter input!";
+    exit(-1);
+  }
 
   // Extract server IP and port from the address
   size_t pos = serverAddress.find(':');
   if (pos == std::string::npos) {
     std::cerr << "Error: Invalid server address format!" << std::endl;
-    return -1;
+    exit(-1);
   }
 
   std::string serverIP = serverAddress.substr(0, pos);
@@ -46,7 +66,7 @@ int main(int argc, char** argv) {
   int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
   if (clientSocket == -1) {
     std::cerr << "Error: Socket could not be created!" << std::endl;
-    return -1;
+    exit(-1);
   }
 
   // Prepare the destination server address and port information
@@ -61,7 +81,7 @@ int main(int argc, char** argv) {
     std::cerr << "Error: Server connection could not be established!"
               << std::endl;
     close(clientSocket);
-    return -1;
+    exit(-1);
   }
 
   // Confirm server connection to the user
@@ -98,6 +118,25 @@ int main(int argc, char** argv) {
 
   // Close the client socket
   close(clientSocket);
+}
+
+int main(int argc, char** argv) {
+  if (argc != 5) {
+    std::cerr << "Usage: " << argv[0]
+              << " <server_ip:port> <image_path> <operation> <param>"
+              << std::endl;
+    return -1;
+  }
+
+  // Extract command-line arguments
+  std::string serverAddress = argv[1];
+  std::string imagePath = argv[2];
+  std::string operation = argv[3];
+  std::string param = argv[4];
+
+  Client client;
+
+  client.operateClient(serverAddress, imagePath, operation, param);
 
   return 0;
 }
