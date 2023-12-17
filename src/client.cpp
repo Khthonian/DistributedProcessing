@@ -42,10 +42,10 @@ bool Client::validateFilterInput(const std::string& operation,
   }
 }
 
-void Client::operateClient(const std::string serverAddress,
-                           const std::string imagePath,
-                           const std::string operation,
-                           const std::string param) {
+void Client::operateClient(const std::string& serverAddress,
+                           const std::string& imagePath,
+                           const std::string& operation,
+                           const std::string& param) {
   // Validate the operation and parameter inputs
   if (!validateFilterInput(operation, param)) {
     std::cout << "Error: Invalid operation/parameter input!";
