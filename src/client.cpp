@@ -120,6 +120,21 @@ void Client::operateClient(const std::string serverAddress,
   close(clientSocket);
 }
 
+void Client::sendInstruction(const int socket, const std::string& operation,
+                             const std::string& param) {
+  // Prepare length-prefixed messages
+  uint32_t opLength = htonl(operation.size());
+  uint32_t paramLength = htonl(param.size());
+
+  // Send operation length and operation
+  send(socket, &opLength, sizeof(opLength), 0);
+  send(socket, operation.c_str(), operation.size(), 0);
+
+  // Send parameter length and parameter
+  send(socket, &paramLength, sizeof(paramLength), 0);
+  send(socket, param.c_str(), param.size(), 0);
+}
+
 int main(int argc, char** argv) {
   if (argc != 5) {
     std::cerr << "Usage: " << argv[0]

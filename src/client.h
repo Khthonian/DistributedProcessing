@@ -18,12 +18,12 @@
 #include <unordered_map>
 #include <vector>
 
-#include "transmission.h"
+#include "peer.h"
 
 #ifndef SRC_CLIENT_H_
 #define SRC_CLIENT_H_
 
-class Client {
+class Client : public Peer {
  private:
   // Define an enumeration for parameter types
   enum class ParamType {
@@ -53,6 +53,10 @@ class Client {
   // Define a function to validate the user input
   bool validateFilterInput(const std::string& operation,
                            const std::string& param);
+
+  // Send the instruction
+  void sendInstruction(const int socket, const std::string& operation,
+                       const std::string& param);
 
  public:
   // Define a function to manage client operation

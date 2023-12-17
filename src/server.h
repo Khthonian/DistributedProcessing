@@ -16,14 +16,14 @@
 #include <string>
 #include <vector>
 
+#include "peer.h"
 #include "processing.h"
 #include "threadPool.h"
-#include "transmission.h"
 
 #ifndef SRC_SERVER_H_
 #define SRC_SERVER_H_
 
-class Server {
+class Server : public Peer {
  private:
   // Define a vector to keep track of connected clients
   std::vector<int> clientSockets;
@@ -33,6 +33,10 @@ class Server {
 
   // Define a function to handle communication with a specific client
   void handleClient(int clientSocket);
+
+  // Define a function to receive instructions
+  void receiveInstruction(const int socket, std::string& operation,
+                          std::string& param);
 
   // Define a factory function to create filter objects
   std::unique_ptr<ImageFilter> createFilter(const std::string& operation,
