@@ -1,20 +1,10 @@
 // Copyright 2023 Stewart Charles Fisher II
 
 // Import libraries
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <opencv2/core/hal/interface.h>
-#include <sys/socket.h>
-#include <unistd.h>
-
-#include <algorithm>
-#include <iostream>
 #include <memory>
 #include <mutex>
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
-#include <string>
-#include <vector>
 
 #include "peer.h"
 #include "processing.h"
