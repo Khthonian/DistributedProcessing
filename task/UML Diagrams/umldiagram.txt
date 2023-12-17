@@ -1,0 +1,149 @@
+@startuml
+left to right direction
+
+class Peer {
+  #FRAGMENT_SIZE : int
+  #sendImage(socket : int, buffer: vector<uchar>)
+  #receiveImage(socket : int, buffer: vector<uchar>)
+}
+
+class Client {
+  -filterRequirements : unordered_map<string, FilterRequirement>
+  -validateFilterInput(operation : string&, param : string&) : bool
+  -sendInstruction(socket : int, operation : string&, param : string&)
+  +operateClient(serverAddress : string&, imagePath : string&, operation : string&, param : string&)
+}
+
+struct FilterRequirement {
+  paramType : ParamType
+  expectedValue : string
+}
+
+enum ParamType {
+  Double
+  Integer
+  String
+}
+
+class Server {
+  -clientSockets : vector<int>
+  -clientSocketMutex : mutex
+  -handleClient(clientSocket : int)
+  -receiveInstruction(socket : int, operation : string&, param : string&)
+  -createFilter(operation : string&, param : string&) : unique_ptr<ImageFilter>
+  +operateServer()
+}
+
+abstract class ImageFilter {
+  {abstract} +applyFilter(image : Mat&, newImage : Mat&)
+}
+
+class ResizeFilter {
+  -_multiplier_ : double
+  +ResizeFilter(multiplier : double)
+  +applyFilter(image : Mat&, newImage : Mat&)
+}
+
+class RotateFilter {
+  -_angle_ : double
+  +RotateFilter(angle : double)
+  +applyFilter(image : Mat&, newImage : Mat&)
+}
+
+class FlipFilter {
+  -_flipCode_ : int
+  +FlipFilter(flipCode : int)
+  +applyFilter(image : Mat&, newImage : Mat&)
+}
+
+abstract class ColourAdjustFilter {}
+
+class BrightnessFilter {
+  -_alpha_ : double
+  +BrightnessFilter(alpha : double)
+  +applyFilter(image : Mat&, newImage : Mat&)
+}
+
+class ContrastFilter {
+  -_beta_ : double
+  +ContrastFilter(beta : double)
+  +applyFilter(image : Mat&, newImage : Mat&)
+}
+
+class GammaFilter {
+  -_gamma_ : double
+  +GammaFilter(gamma : double)
+  +applyFilter(image : Mat&, newImage : Mat&)
+}
+
+abstract class ColourConvertFilter {
+  {abstract} #getConversionCode() : int
+  +applyFilter(image : Mat&, newImage : Mat&)
+}
+
+class RGBFilter {
+  #getConversionCode() : int
+}
+
+class HSVFilter {
+  #getConversionCode() : int
+}
+
+class GreyFilter {
+  #getConversionCode() : int
+}
+
+class YCCFilter {
+  #getConversionCode() : int
+}
+
+class HSLFilter {
+  #getConversionCode() : int
+}
+
+abstract class SmoothFilter {}
+
+class GaussianFilter {
+  -_kernelSize_ : Size
+  +applyFilter(image : Mat&, newImage : Mat&)
+}
+
+class BoxFilter {
+  -_kernelSize_ : Size
+  +applyFilter(image : Mat&, newImage : Mat&)
+}
+
+class SharpFilter {
+  -_sharpKernel_ : Mat
+  +applyFilter(image : Mat&, newImage : Mat&)
+}
+
+' Relations
+Client --|> Peer
+Server --|> Peer
+FilterRequirement --o Client : used by
+ParamType --o Client : used by
+
+ImageFilter --o Server : used by
+
+ResizeFilter --|> ImageFilter
+RotateFilter --|> ImageFilter
+FlipFilter --|> ImageFilter
+
+ColourAdjustFilter --|> ImageFilter
+BrightnessFilter --|> ColourAdjustFilter
+ContrastFilter --|> ColourAdjustFilter
+GammaFilter --|> ColourAdjustFilter
+
+ColourConvertFilter --|> ImageFilter
+RGBFilter --|> ColourConvertFilter
+HSVFilter --|> ColourConvertFilter
+GreyFilter --|> ColourConvertFilter
+YCCFilter --|> ColourConvertFilter
+HSLFilter --|> ColourConvertFilter
+
+SmoothFilter --|> ImageFilter
+GaussianFilter --|> SmoothFilter
+BoxFilter --|> SmoothFilter
+SharpFilter --|> SmoothFilter
+@enduml
