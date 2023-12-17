@@ -26,21 +26,21 @@
 class Server : public Peer {
  private:
   // Define a vector to keep track of connected clients
-  std::vector<int> clientSockets;
+  std::vector<int> _clientSockets_;
 
   // Define a mutex to synchronise access to shared resources
-  std::mutex clientSocketMutex;
+  std::mutex _clientSocketMutex_;
 
   // Define a function to handle communication with a specific client
-  void handleClient(int clientSocket);
+  void _handleClient_(int clientSocket);
 
   // Define a function to receive instructions
-  void receiveInstruction(const int socket, std::string& operation,
-                          std::string& param);
+  void _receiveInstruction_(const int socket, std::string& operation,
+                            std::string& param);
 
   // Define a factory function to create filter objects
-  std::unique_ptr<ImageFilter> createFilter(const std::string& operation,
-                                            const std::string& param);
+  std::unique_ptr<ImageFilter> _createFilter_(const std::string& operation,
+                                              const std::string& param);
 
  public:
   // Define a function to manage server operation

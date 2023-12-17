@@ -14,8 +14,6 @@
 // Define a base class for all filters
 class ImageFilter {
  public:
-  //~ImageFilter() {}
-
   // Pure virtual filter application function
   virtual void applyFilter(cv::Mat& image, cv::Mat& newImage) = 0;
 };
@@ -162,6 +160,7 @@ class BoxFilter : public SmoothFilter {
   void applyFilter(cv::Mat& image, cv::Mat& newImage) override;
 };
 
+// Define derived class for sharpening
 class SharpFilter : public SmoothFilter {
  private:
   cv::Mat _sharpKernel_ =
