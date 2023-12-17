@@ -8,9 +8,9 @@ class Peer {
 }
 
 class Client {
-  -filterRequirements : unordered_map<string, FilterRequirement>
-  -validateFilterInput(operation : string&, param : string&) : bool
-  -sendInstruction(socket : int, operation : string&, param : string&)
+  -_filterRequirements_ : unordered_map<string, FilterRequirement>
+  -_validateFilterInput_(operation : string&, param : string&) : bool
+  -_sendInstruction_(socket : int, operation : string&, param : string&)
   +operateClient(serverAddress : string&, imagePath : string&, operation : string&, param : string&)
 }
 
@@ -26,11 +26,11 @@ enum ParamType {
 }
 
 class Server {
-  -clientSockets : vector<int>
-  -clientSocketMutex : mutex
-  -handleClient(clientSocket : int)
-  -receiveInstruction(socket : int, operation : string&, param : string&)
-  -createFilter(operation : string&, param : string&) : unique_ptr<ImageFilter>
+  -_clientSockets_ : vector<int>
+  -_clientSocketMutex_ : mutex
+  -_handleClient_(clientSocket : int)
+  -_receiveInstruction_(socket : int, operation : string&, param : string&)
+  -_createFilter_(operation : string&, param : string&) : unique_ptr<ImageFilter>
   +operateServer()
 }
 
