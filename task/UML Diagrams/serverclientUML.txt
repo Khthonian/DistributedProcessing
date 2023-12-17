@@ -1,0 +1,51 @@
+@startuml
+left to right direction
+title Server-Client Infrastructure
+
+class Peer {
+  #FRAGMENT_SIZE : int
+  #sendImage(socket : int, buffer: vector<uchar>)
+  #receiveImage(socket : int, buffer: vector<uchar>)
+}
+
+class Client {
+  -_filterRequirements_ : unordered_map<string, FilterRequirement>
+  -_validateFilterInput_(operation : string&, param : string&) : bool
+  -_sendInstruction_(socket : int, operation : string&, param : string&)
+  +operateClient(serverAddress : string&, imagePath : string&, operation : string&, param : string&)
+}
+
+struct FilterRequirement {
+  paramType : ParamType
+  expectedValue : string
+}
+
+enum ParamType {
+  Double
+  Integer
+  String
+}
+
+class Server {
+  -_clientSockets_ : vector<int>
+  -_clientSocketMutex_ : mutex
+  -_handleClient_(clientSocket : int)
+  -_receiveInstruction_(socket : int, operation : string&, param : string&)
+  -_createFilter_(operation : string&, param : string&) : unique_ptr<ImageFilter>
+  +operateServer()
+}
+
+abstract class ImageFilter {
+  {abstract} +applyFilter(image : Mat&, newImage : Mat&)
+}
+
+note right of ImageFilter : Detailed class hierarchy in\nseparate diagram
+
+' Relations
+Client --|> Peer
+Server --|> Peer
+FilterRequirement --o Client : used by
+ParamType --o Client : used by
+
+ImageFilter --o Server : used by
+@enduml
