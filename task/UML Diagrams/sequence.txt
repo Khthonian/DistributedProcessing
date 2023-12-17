@@ -1,0 +1,54 @@
+@startuml
+title Example Sequence of Successful Server-Client Transaction
+
+actor "User" as clientUser
+participant "Client" as client
+participant "Server" as server
+participant "ThreadPool" as threadPool
+participant "ImageFilter" as filter
+actor "Server Administrator" as serverUser 
+
+serverUser -> server : Starts server
+activate server
+
+server -> serverUser : Confirm server start to user
+
+server -> threadPool : Initialises thread pool, \nwith 4 threads by default
+activate threadPool
+
+clientUser -> client : Starts client with inputs \nfor server address, image path, \noperation, and a parameter
+activate client
+
+client -> client : Validate operation \nand parameter input
+
+client -> server : Client requests \nconnection with server
+
+server -> client : Server accepts \nconnection with client
+
+server -> serverUser : Display connected \nclient to user
+
+server -> threadPool : Assign the client operation to a thread
+
+client -> clientUser : Display original image to user
+
+client -> threadPool : Send operation and \nparameter to server
+
+client -> threadPool : Send original image to server
+
+threadPool -> filter : Request chosen operation \nwith user inputs
+activate filter
+
+filter -> threadPool : Return and apply appropriate filter to image
+deactivate filter
+
+threadPool -> client : Send modified image to client
+
+client -> clientUser : Display modified image to user
+
+threadPool -> client : Close socket connection
+deactivate threadPool
+
+client -> server : Close socket connection
+
+deactivate client
+@enduml
