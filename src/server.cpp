@@ -47,7 +47,7 @@ void Server::operateServer() {
   serverAddr.sin_port = htons(12345);
   serverAddr.sin_addr.s_addr = INADDR_ANY;
 
-  if (bind(serverSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) ==
+  if (bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) ==
       -1) {
     std::cerr << "Error: Socket could not be bound!" << std::endl;
     close(serverSocket);
@@ -69,7 +69,7 @@ void Server::operateServer() {
     sockaddr_in clientAddr{};
     socklen_t clientAddrLen = sizeof(clientAddr);
     int clientSocket =
-        accept(serverSocket, (struct sockaddr *)&clientAddr, &clientAddrLen);
+        accept(serverSocket, (struct sockaddr*)&clientAddr, &clientAddrLen);
     if (clientSocket != -1) {
       // Lock the mutex before accessing the vector
       std::lock_guard<std::mutex> guard(clientSocketMutex);
@@ -93,8 +93,8 @@ void Server::operateServer() {
   close(serverSocket);
 }
 
-std::unique_ptr<ImageFilter> Server::createFilter(const std::string &operation,
-                                                  const std::string &param) {
+std::unique_ptr<ImageFilter> Server::createFilter(const std::string& operation,
+                                                  const std::string& param) {
   std::istringstream iss(param);
   double numericParam;
   int intParam;
@@ -142,6 +142,35 @@ std::unique_ptr<ImageFilter> Server::createFilter(const std::string &operation,
 
   // Handle unusable cases
   return nullptr;
+}
+
+void Server::receiveInstruction(const int socket, std::string& operation,
+                                std::string& param) {
+  uint32_t opLength, paramLength;
+
+  // Receive operation length
+  recv(socket, &opLength, sizeof(opLength), 0);
+  opLength = ntohl(opLength);
+
+  // Receive operation
+  char* opBuffer = new char[opLength + 1];
+  recv(socket, opBuffer, opLength, 0);
+  opBuffer[opLength] = '\0';  // Null-terminate
+  operation = std::string(opBuffer, opLength);
+  delete[] opBuffer;
+
+  // Receive parameter length
+  recv(socket, &paramLength, sizeof(paramLength), 0);
+  paramLength = ntohl(paramLength);
+
+  // Receive parameter
+  char* paramBuffer = new char[paramLength + 1];
+  recv(socket, paramBuffer, paramLength, 0);
+
+  // Null terminate
+  paramBuffer[paramLength] = '\0';
+  param = std::string(paramBuffer, paramLength);
+  delete[] paramBuffer;
 }
 
 int main() {
