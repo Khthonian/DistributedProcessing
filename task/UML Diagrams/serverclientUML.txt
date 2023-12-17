@@ -41,11 +41,23 @@ abstract class ImageFilter {
 
 note right of ImageFilter : Detailed class hierarchy in\nseparate diagram
 
+class ThreadPool {
+  -workers : vector<thread>
+  -tasks : queue<function<void()>>
+  -queueMutex : mutex
+  -condition : condition_variable
+  -stop : bool
+  +ThreadPool(threads : size_t)
+  +~ThreadPool()
+  +enqueue(f : F&&, args : Args&&...) : future<result_of<F(Args...)>>
+}
+
 ' Relations
 Client --|> Peer
 Server --|> Peer
 FilterRequirement --o Client : used by
 ParamType --o Client : used by
 
+ThreadPool --o Server : used by
 ImageFilter --o Server : used by
 @enduml
