@@ -10,3 +10,6 @@ bin/
 
 # Ignore cache
 .cache/
+
+# Ignore locally generated UML diagram
+task/umldiagram.png
