@@ -21,6 +21,11 @@ target_link_libraries(server PRIVATE ${OpenCV_LIBS})
 add_executable(client ${SRC_DIR}/client.cpp ${SRC_DIR}/peer.cpp ${SRC_DIR}/peer.h)
 target_link_libraries(client PRIVATE ${OpenCV_LIBS})
 
+# Windows-specific compilation
+if(WIN32)
+  target_link_libraries(server PRIVATE Ws2_32)
+  target_link_libraries(client PRIVATE Ws2_32)
+endif()
 # Set the output directory for the executables
 set_target_properties(server PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../bin")
 set_target_properties(client PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../bin")
