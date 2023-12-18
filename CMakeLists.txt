@@ -26,6 +26,7 @@ if(WIN32)
   target_link_libraries(server PRIVATE Ws2_32)
   target_link_libraries(client PRIVATE Ws2_32)
 endif()
+
 # Set the output directory for the executables
 set_target_properties(server PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../bin")
 set_target_properties(client PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../bin")
