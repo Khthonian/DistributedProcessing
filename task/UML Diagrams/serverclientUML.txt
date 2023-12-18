@@ -1,7 +1,5 @@
 @startuml
-left to right direction
 title Server-Client Infrastructure
-
 class Peer {
   #FRAGMENT_SIZE : int
   #sendImage(socket : int, buffer: vector<uchar>)
@@ -39,7 +37,7 @@ abstract class ImageFilter {
   {abstract} +applyFilter(image : Mat&, newImage : Mat&)
 }
 
-note right of ImageFilter : Detailed class hierarchy in\nseparate diagram
+note bottom of ImageFilter : Detailed class hierarchy in\nseparate diagram
 
 class ThreadPool {
   -workers : vector<thread>
@@ -53,11 +51,11 @@ class ThreadPool {
 }
 
 ' Relations
-Client --|> Peer
-Server --|> Peer
-FilterRequirement --o Client : used by
-ParamType --o Client : used by
+Client -up-|> Peer
+Server -up-|> Peer
+FilterRequirement -up-o Client : used by
+ParamType -up-o Client : used by
 
-ThreadPool --o Server : used by
-ImageFilter --o Server : used by
+ThreadPool -up-o Server : used by
+ImageFilter -up-o Server : used by
 @enduml
