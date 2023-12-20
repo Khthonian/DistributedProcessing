@@ -4,6 +4,8 @@ A distributed image processing system, operating via a console application, in C
 
 While this application features preprocessing directives to allow operation on Windows, it was built and tested on Arch Linux, and was therefore designed with POSIX-compliant systems in mind. It is possible that this application might not work on Windows, in its current state.
 
+The original repository for this project can be found [here](https://github.com/Khthonian/DistributedProcessing).
+
 ## Setup
 
 1. Clone the repository.
