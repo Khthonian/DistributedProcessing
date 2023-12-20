@@ -7,7 +7,6 @@ void Server::_handleClient_(int clientSocket) {
   // Receive the instruction
   std::string operation, param;
   _receiveInstruction_(clientSocket, operation, param);
-  std::cout << operation << " " << param << std::endl;
 
   // Receive original image
   std::vector<uchar> receiveBuffer;
