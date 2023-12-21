@@ -1,7 +1,5 @@
 // Copyright 2023 Stewart Charles Fisher II
 
-#include <opencv2/highgui.hpp>
-
 #include "client.h"
 
 bool Client::_validateFilterInput_(const std::string& operation,
@@ -50,7 +48,8 @@ void Client::operateClient(const std::string& serverAddress,
                            const std::string& param) {
   // Validate the operation and parameter inputs
   if (!_validateFilterInput_(operation, param)) {
-    std::cout << "Error: Invalid operation/parameter input!";
+    std::cerr << "Error: Invalid operation/parameter input!" << std::endl;
+    std::cout << "Check the README for appropriate inputs." << std::endl;
     exit(EXIT_FAILURE);
   }
 
