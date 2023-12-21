@@ -49,14 +49,14 @@ void Client::operateClient(const std::string& serverAddress,
   // Validate the operation and parameter inputs
   if (!_validateFilterInput_(operation, param)) {
     std::cout << "Error: Invalid operation/parameter input!";
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
 
   // Extract server IP and port from the address
   size_t pos = serverAddress.find(':');
   if (pos == std::string::npos) {
     std::cerr << "Error: Invalid server address format!" << std::endl;
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
 
   std::string serverIP = serverAddress.substr(0, pos);
@@ -66,7 +66,7 @@ void Client::operateClient(const std::string& serverAddress,
   int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
   if (clientSocket == -1) {
     std::cerr << "Error: Socket could not be created!" << std::endl;
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
 
   // Prepare the destination server address and port information
@@ -80,8 +80,12 @@ void Client::operateClient(const std::string& serverAddress,
               sizeof(serverAddr)) == -1) {
     std::cerr << "Error: Server connection could not be established!"
               << std::endl;
+#ifdef _WIN32
+    closesocket(clientSocket);
+#else
     close(clientSocket);
-    exit(-1);
+#endif  // _WIN32
+    exit(EXIT_FAILURE);
   }
 
   // Confirm server connection to the user
@@ -91,7 +95,11 @@ void Client::operateClient(const std::string& serverAddress,
   cv::Mat originalImage = cv::imread(imagePath, cv::IMREAD_COLOR);
   if (originalImage.empty()) {
     std::cerr << "Error: Could not read the image file!" << std::endl;
+#ifdef _WIN32
+    closesocket(clientSocket);
+#else
     close(clientSocket);
+#endif  // _WIN32
     exit(EXIT_FAILURE);
   }
 
@@ -112,9 +120,22 @@ void Client::operateClient(const std::string& serverAddress,
   std::vector<uchar> receiveBuffer;
   receiveImage(clientSocket, receiveBuffer);
 
+  // Display modified image
   cv::Mat modifiedImage = cv::imdecode(receiveBuffer, cv::IMREAD_COLOR);
   cv::imshow("Modified Image", modifiedImage);
   cv::waitKey(0);
+
+  // Save the modified image
+  bool isSaved = cv::imwrite(imagePath, modifiedImage);
+  if (!isSaved) {
+    std::cerr << "Error: Could not write the image file!" << std::endl;
+#ifdef _WIN32
+    closesocket(clientSocket);
+#else
+    close(clientSocket);
+#endif  // _WIN32
+    exit(EXIT_FAILURE);
+  }
 
   // Close the client socket
 #ifdef _WIN32
