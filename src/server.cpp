@@ -38,7 +38,7 @@ void Server::operateServer() {
   int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
   if (serverSocket == -1) {
     std::cerr << "Error: Socket could not be created!" << std::endl;
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
 
   // Confirm server launch to user
@@ -53,8 +53,12 @@ void Server::operateServer() {
   if (bind(serverSocket, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) ==
       -1) {
     std::cerr << "Error: Socket could not be bound!" << std::endl;
+#ifdef _WIN32
+    closesocket(serverSocket);
+#else
     close(serverSocket);
-    exit(-1);
+#endif  // _WIN32
+    exit(EXIT_FAILURE);
   }
 
   // Listen for incoming connections
@@ -65,7 +69,7 @@ void Server::operateServer() {
 #else
     close(serverSocket);
 #endif  // _WIN32
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
 
   // Initialise thread pool with 4 threads
@@ -93,7 +97,14 @@ void Server::operateServer() {
     } else {
       std::cerr << "Error: Client connection could not be established!"
                 << std::endl;
+#ifdef _WIN32
+      closesocket(clientSocket);
+      closesocket(serverSocket);
+#else
       close(clientSocket);
+      close(serverSocket);
+#endif  // _WIN32
+      exit(EXIT_FAILURE);
     }
   }
 
