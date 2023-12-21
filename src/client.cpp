@@ -124,9 +124,9 @@ void Client::operateClient(const std::string& serverAddress,
   cv::Mat modifiedImage = cv::imdecode(receiveBuffer, cv::IMREAD_COLOR);
   cv::imshow("Modified Image", modifiedImage);
 
-  // Wait for user to press a key
+  // Wait 10 seconds for user to press a key
   std::cout << "Press a key to close both images." << std::endl;
-  cv::waitKey(0);
+  cv::waitKey(10000);
 
   // Close both images
   cv::destroyAllWindows();
