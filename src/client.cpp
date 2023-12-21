@@ -1,5 +1,7 @@
 // Copyright 2023 Stewart Charles Fisher II
 
+#include <opencv2/highgui.hpp>
+
 #include "client.h"
 
 bool Client::_validateFilterInput_(const std::string& operation,
@@ -91,7 +93,7 @@ void Client::operateClient(const std::string& serverAddress,
   // Confirm server connection to the user
   std::cout << "Connected to server." << std::endl;
 
-  // Display the image
+  // Read in the image
   cv::Mat originalImage = cv::imread(imagePath, cv::IMREAD_COLOR);
   if (originalImage.empty()) {
     std::cerr << "Error: Could not read the image file!" << std::endl;
@@ -105,8 +107,6 @@ void Client::operateClient(const std::string& serverAddress,
 
   // Display the original image using imshow
   cv::imshow("Original Image", originalImage);
-  cv::waitKey(0);
-  cv::destroyWindow("Original Image");
 
   // Send the instruction
   _sendInstruction_(clientSocket, operation, param);
@@ -123,7 +123,13 @@ void Client::operateClient(const std::string& serverAddress,
   // Display modified image
   cv::Mat modifiedImage = cv::imdecode(receiveBuffer, cv::IMREAD_COLOR);
   cv::imshow("Modified Image", modifiedImage);
+
+  // Wait for user to press a key
+  std::cout << "Press a key to close both images." << std::endl;
   cv::waitKey(0);
+
+  // Close both images
+  cv::destroyAllWindows();
 
   // Save the modified image
   bool isSaved = cv::imwrite(imagePath, modifiedImage);
