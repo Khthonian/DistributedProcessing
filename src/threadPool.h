@@ -17,16 +17,19 @@
 class ThreadPool {
  private:
   // Define a vector to store worker threads
-  std::vector<std::thread> workers;
+  std::vector<std::thread> _workers_;
+  
   // Define a queue to store tasks
-  std::queue<std::function<void()>> tasks;
+  std::queue<std::function<void()>> _tasks_;
 
   // Define a mutex to protect task queue
-  std::mutex queueMutex;
+  std::mutex _queueMutex_;
+  
   // Define a condition variable for thread synchronisation
-  std::condition_variable condition;
+  std::condition_variable _condition_;
+  
   // Define a flag to control the stopping of the thread pool
-  bool stop;
+  bool _stop_;
 
  public:
   // Initialise the thread pool and start the threads
