@@ -19,7 +19,9 @@ bool Client::_validateFilterInput_(const std::string& operation,
   switch (requirement.paramType) {
     case ParamType::Integer:
       // Check if all characters are digits
-      return std::all_of(param.begin(), param.end(), ::isdigit);
+      return (param[0] == '-' &&
+              std::all_of(param.begin() + 1, param.end(), ::isdigit)) ||
+             (std::all_of(param.begin(), param.end(), ::isdigit));
     case ParamType::Double:
       // Check if the string can be a double
       char* end;
