@@ -164,7 +164,7 @@ class BoxFilter : public SmoothFilter {
 class SharpFilter : public SmoothFilter {
  private:
   cv::Mat _sharpKernel_ =
-      (cv::Mat_<double>(3, 3) << -1, -1, -1, -1, -9, -1, -1, -1, -1);
+      (cv::Mat_<double>(3, 3) << -1, -1, -1, -1, 9, -1, -1, -1, -1);
 
  public:
   void applyFilter(cv::Mat& image, cv::Mat& newImage) override;
