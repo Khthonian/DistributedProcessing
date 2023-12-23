@@ -14,16 +14,16 @@ auto ThreadPool::enqueue(F&& f, Args&&... args)
     std::future<return_type> res = task->get_future();
     {
         // Lock the mutex
-        std::unique_lock<std::mutex> lock(queueMutex);
+        std::unique_lock<std::mutex> lock(_queueMutex_);
         
         // If the pool has stopped, throw an exception
-        if (stop) throw std::runtime_error("enqueue on stopped ThreadPool");
+        if (_stop_) throw std::runtime_error("enqueue on stopped ThreadPool");
 
         // Add the task to the queue
-        tasks.emplace([task]() { (*task)(); });
+        _tasks_.emplace([task]() { (*task)(); });
     }
     // Notify a waiting thread
-    condition.notify_one();
+    _condition_.notify_one();
 
     // Return the future
     return res;
