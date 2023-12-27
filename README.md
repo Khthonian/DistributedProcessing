@@ -2,6 +2,8 @@
 
 A distributed image processing system, operating via a console application, in C++. The premise of this application is to showcase the usage of multithreading, networking, and modern C++ standards. The application operates via the conjunction of two executables, `server` and `client`. The server is intended to be able to host multiple clients simultaneously.
 
+The video submission can be found at `task/AP Assignment 2 Video.mp4`.
+
 The original repository for this project can be found [here](https://github.com/Khthonian/DistributedProcessing).
 
 ## Setup
