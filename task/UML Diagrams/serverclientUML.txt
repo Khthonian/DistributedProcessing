@@ -40,11 +40,11 @@ abstract class ImageFilter {
 note bottom of ImageFilter : Detailed class hierarchy in\nseparate diagram
 
 class ThreadPool {
-  -workers : vector<thread>
-  -tasks : queue<function<void()>>
-  -queueMutex : mutex
-  -condition : condition_variable
-  -stop : bool
+  -_workers_ : vector<thread>
+  -_tasks_ : queue
+  -_queueMutex_ : mutex
+  -_condition_ : condition_variable
+  -_stop_ : bool
   +ThreadPool(threads : size_t)
   +~ThreadPool()
   +enqueue(f : F&&, args : Args&&...) : future<result_of<F(Args...)>>
