@@ -72,8 +72,11 @@ void Server::operateServer() {
     exit(EXIT_FAILURE);
   }
 
-  // Initialise thread pool with 4 threads
-  ThreadPool pool(4);
+  // Determine the number of hardware threads
+  int maxThreads = std::thread::hardware_concurrency();
+
+  // Initialise thread pool with the number of threads
+  ThreadPool pool(maxThreads);
 
   while (true) {
     // Accept incoming client connections
